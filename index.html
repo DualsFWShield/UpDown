@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compteur de Points Escalier</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Librairie pour les graphiques (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Librairies pour l'export PDF (jsPDF & jsPDF-AutoTable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <button id="theme-toggle-btn"><i class="fas fa-moon"></i> Mode Sombre</button>
+        <h1 id="main-title"><i class="fas fa-chart-line"></i> Jeu de l'Escalier</h1>
+        <button onclick="window.location.href='rules.html'"><i class="fas fa-book"></i> Comment jouer</button>
+        <button id="create-test-game-btn" style="display: none;"><i class="fas fa-vial"></i> Créer une Partie Test</button>
+        <button id="auto-fill-scores-btn" style="display: none;"><i class="fas fa-magic"></i> Remplir Scores Automatiquement</button>
+
+        <!-- Écran de Configuration de la Partie -->
+        <section id="setup-screen" class="screen active-screen">
+            <h2 id="setup-title"><i class="fas fa-cogs"></i> Nouvelle Partie</h2>
+            <div>
+                <label for="num-players">Nombre de joueurs (3-6):</label>
+                <select id="num-players">
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+            <div id="player-names-inputs">
+                <!-- Les inputs pour les noms seront générés ici par JS -->
+            </div>
+            <div id="game-options" style="margin-top: 20px; margin-bottom: 15px;">
+                <h4><i class="fas fa-sliders-h"></i> Options de Jeu</h4>
+                <div>
+                    <input type="radio" id="option-abandon-none" name="abandon-option" value="0" checked>
+                    <label for="option-abandon-none" style="display: inline-block; font-weight: normal;">Pas d'abandons</label>
+                </div>
+                <div>
+                    <input type="radio" id="option-abandon-single" name="abandon-option" value="1">
+                    <label for="option-abandon-single" style="display: inline-block; font-weight: normal;">Abandons facultatifs (1 montée / 1 descente)</label>
+                </div>
+                <div>
+                    <input type="radio" id="option-abandon-triple" name="abandon-option" value="3">
+                    <label for="option-abandon-triple" style="display: inline-block; font-weight: normal;">Triple Abandons (3 montée / 3 descente)</label>
+                </div>
+                 <div>
+                    <input type="radio" id="option-abandon-quintuple" name="abandon-option" value="5">
+                    <label for="option-abandon-quintuple" style="display: inline-block; font-weight: normal;">Quintuple Abandons (5 montée / 5 descente)</label>
+                </div>
+                <div style="margin-top: 10px; padding-left: 20px;">
+                    <input type="checkbox" id="option-bonus" name="option-bonus">
+                    <label for="option-bonus" style="display: inline-block; font-weight: normal;">Activer Bonus de Perfection (si 10 abandons)</label>
+                </div>
+            </div>
+            <button id="start-game-btn"><i class="fas fa-play"></i> Commencer</button>
+            <button id="load-game-btn" style="display: none;"><i class="fas fa-redo"></i> Reprendre</button>
+            <p id="error-setup" class="error-message"></p>
+        </section>
+
+        <!-- Écran de Jeu Principal -->
+        <section id="game-screen" class="screen">
+            <div id="game-info">
+                <h2 id="round-title"><i class="fas fa-sync-alt"></i> Manche X</h2>
+                <p>Donneur: <span id="current-dealer"></span></p>
+                <p>Sens de la parole: <span id="distribution-direction-info"></span></p>
+            </div>
+
+            <!-- Phase d'Annonces -->
+            <div id="bidding-phase">
+                <h3><i class="fas fa-bullhorn"></i> Annonces</h3>
+                <p>Celui qui a la parole est indiqué par un <span class="parole-indicator">♦</span></p>
+                <div id="bids-inputs">
+                    <!-- Les inputs pour les annonces seront générés ici -->
+                </div>
+                <p>Total des annonces : <span id="total-bids">0</span> / <span id="cards-in-round-display">X</span></p>
+                <button id="submit-bids-btn"><i class="fas fa-check"></i> Valider Annonces</button>
+                <p id="error-bids" class="error-message"></p>
+            </div>
+
+            <!-- Phase de Saisie des Levées -->
+            <div id="tricks-phase" style="display: none;">
+                <h3><i class="fas fa-hand-paper"></i> Levées Faites</h3>
+                <div id="tricks-inputs">
+                    <!-- Les inputs pour les levées seront générés ici -->
+                </div>
+                <p>Total des levées : <span id="total-tricks-made">0</span> / <span id="cards-in-round-display-tricks">X</span> (Doit être égal)</p>
+                <button id="submit-tricks-btn"><i class="fas fa-check"></i> Valider Levées</button>
+                <p id="error-tricks" class="error-message"></p>
+            </div>
+
+            <!-- Tableau des Scores en cours -->
+            <div id="live-scoreboard">
+                <h3><i class="fas fa-table"></i> Scores Actuels</h3>
+                <table id="scores-table">
+                    <thead>
+                        <tr>
+                            <th>Joueur</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scores-tbody"></tbody>
+                </table>
+            </div>
+            <button id="undo-round-btn" style="background-color: #ffc107; display: none;"><i class="fas fa-undo"></i> Corriger</button>
+            <button id="cancel-game-btn"><i class="fas fa-times"></i> Annuler</button>
+        </section>
+
+        <!-- Écran de Fin de Partie -->
+        <section id="end-game-screen" class="screen">
+            <h2><i class="fas fa-trophy"></i> Fin de la Partie</h2>
+            <p>Gagnant(e): <span id="winner-name"></span></p>
+
+            <h3><i class="fas fa-chart-bar"></i> Récapitulatif Final</h3>
+            <table id="final-scores-table">
+                <thead>
+                    <tr>
+                        <th>Joueur</th>
+                        <th>Score Final</th>
+                        <th>Contrats Réussis</th>
+                        <th>Contrats Rompus</th>
+                        <th>Abandons</th>
+                        <th>Inversions</th>
+                        <th>Bonus</th>
+                    </tr>
+                </thead>
+                <tbody id="final-scores-tbody"></tbody>
+            </table>
+
+            <div class="charts-container">
+                <canvas id="score-evolution-chart"></canvas>
+                <canvas id="contracts-chart"></canvas>
+            </div>
+
+            <button id="export-pdf-btn"><i class="fas fa-file-pdf"></i> Exporter PDF</button>
+            <button id="new-game-btn"><i class="fas fa-redo"></i> Nouvelle Partie</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

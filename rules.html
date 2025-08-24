@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Règles du Jeu - UpDown / Escalier</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <button id="theme-toggle-btn"><i class="fas fa-moon"></i> Mode Sombre</button>
+        <h1><i class="fas fa-book"></i> Règles du Jeu - UpDown</h1>
+
+        <!-- Résumé rapide pour lecture rapide -->
+        <section>
+            <h2><i class="fas fa-bolt"></i> En bref</h2>
+            <ul>
+                <li>Joueurs : 3 à 5.</li>
+                <li>Partie : 20 manches (montée 1→10, descente 10→1).</li>
+                <li>Chaque manche : annonce du nombre de plis, puis jeu. Points : +5 par pronostic réussi +5 par pli réussi (symétrique en négatif si raté).</li>
+                <li>Option : abandons (configurable par table). Bonus spécifiques si beaucoup d'abandons correctement pronostiqués.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-users"></i> Participants & placement</h2>
+            <ul>
+                <li>3 à 5 joueurs.</li>
+                <li>Tirage d'une carte pour définir l'ordre : plus faible commence, couleurs : Trèfle &lt; Carreau &lt; Cœur &lt; Pique.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-gamepad"></i> Principes du jeu</h2>
+            <ul>
+                <li>Jeu : 52 cartes (sans jokers).</li>
+                <li>Atout : carte révélée sur le talon après la distribution.</li>
+                <li>Suivre la couleur si possible ; sinon couper (atout) ou se défausser.</li>
+                <li>Atout l'emporte sur toute autre couleur ; sinon la couleur menée décide le pli.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-layer-group"></i> Structure de la partie</h2>
+            <p>20 manches : montée (1→10) puis descente (10→1). Le donneur passe (sens horaire par défaut), sauf inversion payée.</p>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-hand-paper"></i> Abandons (optionnels)</h2>
+            <p>La table choisit si elle autorise les abandons et combien par montée/descente. Par défaut ici : 5 montée / 5 descente.</p>
+
+            <details>
+                <summary>Règles détaillées (cliquer pour ouvrir)</summary>
+                <h4>Quota par joueur</h4>
+                <ul>
+                    <li>Par défaut : jusqu'à 5 abandons pendant la montée et jusqu'à 5 pendant la descente.</li>
+                    <li>La table peut configurer différemment (ex. 3 montée / 2 descente).</li>
+                </ul>
+
+                <h4>Contrainte minimale</h4>
+                <ul>
+                    <li>Chaque manche doit avoir au moins 2 joueurs actifs.</li>
+                    <li>Limite d'abandons simultanés : 5 joueurs → max 3, 4 joueurs → max 2, 3 joueurs → max 1.</li>
+                </ul>
+
+                <h4>Procédure</h4>
+                <ul>
+                    <li>L'abandon s'annonce en silence (jetons sur cartes face cachée).</li>
+                    <li>Les cartes abandonnées restent secrètes.</li>
+                    <li>Le joueur peut regarder ou non ses cartes avant d'abandonner.</li>
+                </ul>
+            </details>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-random"></i> Changement de sens</h2>
+            <p>Possible en payant avec ses abandons (coût standard 2 abandons). Option : abandon + inversion = 3 abandons.</p>
+            <details>
+                <summary>Détails</summary>
+                <ul>
+                    <li>Le donneur conserve la distribution, seul l'ordre des receveurs s'inverse.</li>
+                    <li>Un seul changement autorisé par manche : le premier joueur qui paye verrouille la décision pour la manche.</li>
+                </ul>
+            </details>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-calculator"></i> Comptage des points (rapide)</h2>
+            <ul>
+                <li>Pronostic respecté : +5 points.</li>
+                <li>Chaque pli réalisé : +5 points (cumulés).</li>
+                <li>Pronostic raté : -5 points (et -5 par pli d'écart).</li>
+            </ul>
+
+            <details>
+                <summary>Exemples</summary>
+                <ul>
+                    <li>Annonce 3, réalise 3 → 5 + (3×5) = 20 points.</li>
+                    <li>Annonce 3, réalise 1 → -5 + (-2×5) = -15 points.</li>
+                    <li>Annonce 3, réalise 4 → -5 + (-1×5) = -10 points.</li>
+                </ul>
+            </details>
+
+            <h4>Bonus spécial (pour joueurs ayant beaucoup abandonné)</h4>
+            <ul>
+                <li>10 abandons et 10 pronostics respectés → bonus +60 points.</li>
+                <li>10 abandons et 9 pronostics respectés → +30 points.</li>
+                <li>10 abandons et 8 pronostics respectés → +15 points.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-exclamation-triangle"></i> Pénalités & départage</h2>
+            <ul>
+                <li>Mauvais nombre de cartes après début de manche : -10 points.</li>
+                <li>Parler pendant le jeu (selon accord) : -5 points.</li>
+                <li>En cas d'égalité de score : le joueur avec le moins d'erreurs de pronostic l'emporte.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-flag-checkered"></i> Fin de la partie</h2>
+            <p>Après la dernière manche, le meilleur score gagne (départage par erreurs de pronostic si nécessaire).</p>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-laptop-code"></i> Fonctionnalités de l'application</h2>
+            <p>Cette application aide à gérer une partie de UpDown / Escalier et apporte les fonctionnalités suivantes :</p>
+            <ul>
+                <li><strong>Configuration flexible</strong> — choix du nombre de joueurs et du quota d'abandons (0,1,3,5) et activation du bonus spécial.</li>
+                <li><strong>Interface guidée</strong> — indication du donneur, sens de distribution (horaire / anti-horaire), et du joueur ayant la parole (♦).</li>
+                <li><strong>Gestion des abandons</strong> — cases à cocher pour déclarer un abandon ; l'application applique les limites simultanées selon le nombre de joueurs.</li>
+                <li><strong>Inversion du sens</strong> — boutons disponibles en phase d'annonce pour inverser la distribution (coût en abandons : 2 ou 3 si combiné avec abandon).</li>
+                <li><strong>Validations automatiques</strong> — l'app vérifie que les annonces sont dans l'intervalle autorisé, empêche moins de deux joueurs actifs, et exige que le total des levées saisies égale le nombre de cartes de la manche.</li>
+                <li><strong>Annulation (Corriger)</strong> — bouton "Corriger" pour annuler la dernière manche et restaurer scores/états (abandons, inversions, historiques).</li>
+                <li><strong>Sauvegarde & reprise</strong> — l'état est stocké dans localStorage : vous pouvez reprendre une partie en cours.</li>
+                <li><strong>Export PDF</strong> — export du récapitulatif (scores finaux, tableaux, et graphiques) via jsPDF + autoTable.</li>
+                <li><strong>Graphiques</strong> — évolution des scores et performance des contrats affichées en fin de partie.</li>
+                <li><strong>Modes de test</strong> — bouton "Créer une Partie Test" et "Remplir Scores Automatiquement" pour simuler une partie et tester l'interface.</li>
+                <li><strong>Thème</strong> — bascule Clair/Sombre conservée entre sessions via localStorage.</li>
+            </ul>
+
+            <details>
+                <summary>Comportements et validations précises</summary>
+                <ul>
+                    <li>Les annonces numériques sont forcées entre 0 et le nombre de cartes de la manche.</li>
+                    <li>Lors d'abandon, la case rend l'input d'annonce inactif et la partie ignore ces cartes (elles restent secrètes).</li>
+                    <li>La vérification des levées exige que la somme des levées déclarées par les joueurs actifs soit exactement égale au nombre de cartes de la manche ; sinon l'app refuse la validation.</li>
+                    <li>Si un joueur paie l'inversion (2 ou 3 abandons), l'application décrémente ses possibilités d'abandon et marque l'inversion pour la manche dans l'historique.</li>
+                    <li>Le bouton "Corriger" restaure scores, historiques, compteurs d'abandons et sens de distribution comme avant la manche annulée.</li>
+                    <li>L'export PDF inclut le tableau récapitulatif des manches et capture les canvases des graphiques si disponibles.</li>
+                </ul>
+            </details>
+
+            <p>Usage recommandé : paramétrez les options d'abandon et le bonus avant de cliquer <em>Commencer</em>. L'application applique strictement les règles configurées pour éviter les erreurs de saisie pendant la partie.</p>
+        </section>
+
+        <button onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Retour à l'accueil</button>
+    </div>
+
+    <script>
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-toggle-btn').innerHTML = '<i class="fas fa-sun"></i> Mode Clair';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('theme-toggle-btn').innerHTML = '<i class="fas fa-moon"></i> Mode Sombre';
+            }
+        }
+
+        // Charger le thème depuis le localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+
+        document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            const newTheme = isDarkMode ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    </script>
+</body>
+</html>

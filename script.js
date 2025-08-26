@@ -665,23 +665,133 @@ document.addEventListener('DOMContentLoaded', () => {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'pt', 'a4');
         const margin = 40;
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
         let currentY = margin;
 
-        pdf.setFontSize(20);
-        pdf.text("Récapitulatif Partie d'Escalier", pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
-        currentY += 30;
+        // Titre
+        pdf.setFontSize(18);
+        pdf.text("Récapitulatif Partie d'Escalier", pageWidth / 2, currentY, { align: 'center' });
+        currentY += 28;
 
+        // 1) Tableau des scores finaux
         const finalScoresHeader = [['Joueur', 'Score', 'Réussis', 'Rompus', 'Abandons', 'Inversions', 'Bonus']];
-        const finalScoresBody = [...gameState.players].sort((a,b) => b.score - a.score).map(p => 
+        const finalScoresBody = [...gameState.players].sort((a,b) => b.score - a.score).map(p =>
             [p.name, p.score, p.contractsMade, p.contractsBroken, p.totalAbandons, p.reversalsUsed, p.bonusPoints]
         );
         pdf.autoTable({
-            startY: currentY, head: finalScoresHeader, body: finalScoresBody,
-            theme: 'striped', headStyles: { fillColor: [0, 123, 255] },
+            startY: currentY,
+            head: finalScoresHeader,
+            body: finalScoresBody,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { fontSize: 10 }
         });
-        currentY = pdf.previousAutoTable.finalY + 30;
-        
-        pdf.save(`Escalier_Partie_${new Date().toISOString().slice(0,10)}.pdf`);
+        currentY = (pdf.previousAutoTable && pdf.previousAutoTable.finalY) ? pdf.previousAutoTable.finalY + 18 : currentY + 18;
+
+        // 2) Tableau détaillé manche par manche (une ligne par joueur/par manche)
+        const roundsRows = [];
+        // Si roundHistory vide, ajouter info
+        if (!gameState.roundHistory || gameState.roundHistory.length === 0) {
+            roundsRows.push(['-', '-', '-', '-', '-', '-', '-', '-']);
+        } else {
+            gameState.roundHistory.forEach((round) => {
+                const roundNum = round.roundNum ?? '-';
+                const cards = round.cards ?? '-';
+                const dealer = round.dealer ?? '-';
+                const reversalText = (round.reversalInfo && gameState.players[round.reversalInfo.playerId])
+                    ? `${gameState.players[round.reversalInfo.playerId].name} (coût ${round.reversalInfo.cost})`
+                    : '';
+                gameState.players.forEach(player => {
+                    const bid = round.bids ? (round.bids[player.name] ?? '') : '';
+                    const tricks = round.tricks ? (round.tricks[player.name] ?? '') : '';
+                    const scoreChange = round.scoresChange ? (round.scoresChange[player.name] ?? '') : '';
+                    roundsRows.push([roundNum, cards, dealer, player.name, bid === 'A' ? 'A' : bid, tricks, scoreChange, reversalText]);
+                });
+            });
+        }
+
+        pdf.autoTable({
+            startY: currentY,
+            head: [['Manche', 'Cartes', 'Donneur', 'Joueur', 'Annonce', 'Levées', 'Delta', 'Inversion']],
+            body: roundsRows,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 4 },
+            headStyles: { fillColor: [40, 40, 40] },
+            columnStyles: {
+                0: { cellWidth: 36 }, // Manche
+                1: { cellWidth: 36 }, // Cartes
+                2: { cellWidth: 70 }, // Donneur
+                3: { cellWidth: 80 }, // Joueur
+                4: { cellWidth: 50 }, // Annonce
+                5: { cellWidth: 50 }, // Levées
+                6: { cellWidth: 50 }, // Delta
+                7: { cellWidth: 120 } // Inversion
+            }
+        });
+        currentY = (pdf.previousAutoTable && pdf.previousAutoTable.finalY) ? pdf.previousAutoTable.finalY + 18 : currentY + 18;
+
+        // 3) Graphiques (forcer génération si nécessaire)
+        // S'assurer que les charts existent et sont mis à jour
+        if (!scoreEvolutionChartInstance || !contractsChartInstance) {
+            try { generateCharts(); } catch (e) { /* ignore */ }
+        }
+
+        // Helper: ajouter image et respecter page break
+        function addImageToPdf(imgData, imgW, imgH) {
+            if (currentY + imgH > pageHeight - margin) {
+                pdf.addPage();
+                currentY = margin;
+            }
+            pdf.addImage(imgData, 'PNG', margin, currentY, imgW, imgH);
+            currentY += imgH + 12;
+        }
+
+        // Score evolution chart
+        const scoreCanvasEl = document.getElementById('score-evolution-chart');
+        if (scoreCanvasEl) {
+            try {
+                const imgData = scoreCanvasEl.toDataURL('image/png', 1.0);
+                const maxImgW = pageWidth - margin * 2;
+                const imgH = (scoreCanvasEl.height / scoreCanvasEl.width) * maxImgW;
+                addImageToPdf(imgData, maxImgW, imgH);
+            } catch (e) {
+                // ignore if cannot export image
+            }
+        }
+
+        // Contracts chart
+        const contractsCanvasEl = document.getElementById('contracts-chart');
+        if (contractsCanvasEl) {
+            try {
+                const imgData = contractsCanvasEl.toDataURL('image/png', 1.0);
+                const maxImgW = pageWidth - margin * 2;
+                const imgH = (contractsCanvasEl.height / contractsCanvasEl.width) * maxImgW;
+                addImageToPdf(imgData, maxImgW, imgH);
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // 4) Récapitulatif des options et méta
+        const metaLines = [
+            [`Date: ${new Date().toLocaleString()}`],
+            [`Joueurs: ${gameState.numPlayers}`],
+            [`Abandons autorisés: ${gameState.gameOptions.abandons}`],
+            [`Bonus activé: ${gameState.gameOptions.bonus ? 'Oui' : 'Non'}`],
+            [`Direction distribution actuelle: ${gameState.distributionDirection}`]
+        ];
+        // Si plus de place, ajouter nouvelle page
+        if (currentY + 80 > pageHeight - margin) { pdf.addPage(); currentY = margin; }
+        pdf.setFontSize(10);
+        metaLines.forEach(line => {
+            pdf.text(line[0], margin, currentY);
+            currentY += 14;
+        });
+
+        // Sauvegarde finale
+        const filename = `Escalier_Partie_${new Date().toISOString().slice(0,10)}.pdf`;
+        pdf.save(filename);
     });
 
     // --- Initialisation et Fonctions de Test ---
@@ -717,41 +827,217 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTitle.addEventListener('click', () => { setupTitleClicks++; if (setupTitleClicks >= 3 && mainTitleClicks >= 2) createTestGameBtn.style.display = 'inline-block'; });
     mainTitle.addEventListener('click', () => { mainTitleClicks++; if (setupTitleClicks >= 3 && mainTitleClicks >= 2) createTestGameBtn.style.display = 'inline-block'; });
     
-    createTestGameBtn.addEventListener('click', () => {
-        document.getElementById('num-players').value = '4';
+    // Replace the existing createTestGameBtn click handler with the following to add a configurable test mode
+    createTestGameBtn.addEventListener('click', async () => {
+        // Ask test parameters
+        let abandons = prompt("Nombre d'abandons autorisés pour la partie test ? (0, 1, 3, 5)", "5");
+        if (abandons === null) return; // cancel
+        abandons = parseInt(abandons, 10);
+        if (![0, 1, 3, 5].includes(abandons)) {
+            alert("Valeur d'abandons invalide. Utilisez 0, 1, 3 ou 5.");
+            return;
+        }
+        let bonusAnswer = prompt("Activer les bonus pour la partie test ? (oui/non)", "oui");
+        if (bonusAnswer === null) return;
+        bonusAnswer = /^o/i.test(bonusAnswer.trim());
+
+        // Configure UI options (assumes radio inputs exist with ids option-abandon-0/1/3/5 and #option-bonus)
+        const radioId = {0: 'option-abandon-none', 1: 'option-abandon-single', 3: 'option-abandon-triple', 5: 'option-abandon-quintuple'}[abandons];
+        const radioEl = document.getElementById(radioId);
+        if (radioEl) radioEl.checked = true;
+        optionBonusCheckbox.disabled = !(abandons === 5);
+        optionBonusCheckbox.checked = (abandons === 5) ? !!bonusAnswer : false;
+
+        // Setup 5 players with requested names
+        document.getElementById('num-players').value = '5';
         generatePlayerNameInputs();
-        const names = ["Alice", "Bob", "Charlie", "Diana"];
+        const names = ["Noah", "Spart", "Alex", "Nao", "Jean"];
         playerNamesInputsDiv.querySelectorAll('input').forEach((input, i) => input.value = names[i]);
-        document.getElementById('option-abandon-quintuple').checked = true;
-        document.getElementById('option-bonus').disabled = false;
-        document.getElementById('option-bonus').checked = true;
+
+        // Start configured game
         startGameBtn.click();
-        autoFillScoresBtn.style.display = 'inline-block';
+
+        // Wait a tick to ensure UI created
+        await new Promise(r => setTimeout(r, 150));
+
+        // Enable fast auto-run of the entire test game (plays all rounds automatically following the described behaviors)
+        gameState.testMode = true;
+
+        // Helper sleep to allow UI transitions
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // Decide strategy functions
+        function decideBid(playerName, currentCards, playerObj) {
+            // Noah: medium stable bid (perfect player will match tricks)
+            if (playerName === 'Noah') {
+                return Math.min(currentCards, Math.max(0, Math.floor(currentCards / 2)));
+            }
+            // Alex: prefers to abandon when possible (handled by checking abandon checkbox), otherwise low/random bids
+            if (playerName === 'Alex') {
+                return Math.floor(Math.random() * Math.min(2, currentCards + 1));
+            }
+            // Jean: bids randomly but will always end up wrong
+            if (playerName === 'Jean') {
+                return Math.floor(Math.random() * (currentCards + 1));
+            }
+            // Spart & Nao: play normally most of the time
+            return Math.floor(Math.random() * (currentCards + 1));
+        }
+
+        function decideTricks(playerName, bid, currentCards) {
+            if (bid === 'A') return 0;
+            if (playerName === 'Noah') return bid; // perfect
+            if (playerName === 'Jean') {
+                // always wrong: pick a different valid value
+                for (let d = 1; d <= currentCards; d++) {
+                    const val = (bid + d) % (currentCards + 1);
+                    if (val !== bid) return val;
+                }
+                return (bid === 0) ? 1 : 0;
+            }
+            if (playerName === 'Alex') {
+                // if not abandoned, often imperfect
+                if (Math.random() < 0.6) {
+                    // wrong: choose different value
+                    const alt = (bid + 1) % (currentCards + 1);
+                    return alt === bid ? Math.max(0, bid - 1) : alt;
+                }
+                return bid;
+            }
+            // Spart & Nao: occasionally wrong (20%)
+            if (Math.random() < 0.2) {
+                const alt = (bid + 1) % (currentCards + 1);
+                return alt === bid ? Math.max(0, bid - 1) : alt;
+            }
+            return bid;
+        }
+
+        // Play through all remaining rounds automatically
+        async function playRemainingRounds() {
+            while (gameState.currentRound < gameState.totalRounds) {
+                // Ensure bidding UI present
+                if (gameState.currentPhase !== 'bidding') {
+                    setupBiddingPhase();
+                    await sleep(60);
+                }
+
+                const currentCards = gameState.roundCardSequence[gameState.currentRound];
+
+                // Decide abandons first, trying to respect allowed abandons & rule "at least 2 players must play"
+                // We'll attempt to have Alex abandon most often, then Spart/Nao sometimes.
+                const abandonCandidates = ['Alex', 'Spart', 'Nao'];
+                // Count abandons already used in this round via checkboxes will be handled via DOM elements
+                // First clear any existing selections (defensive)
+                bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => { cb.checked = false; cb.disabled = false; });
+                bidsInputsDiv.querySelectorAll('.reverse-cb').forEach(cb => { cb.checked = false; cb.disabled = false; });
+                gameState.reversalInfoForRound = null;
+                await sleep(20);
+
+                // For each player element, set bid or abandon based on strategy and available abandons
+                const plannedBids = {}; // name -> bid or 'A'
+                let plannedAbandons = 0;
+                // Attempt to apply abandons in preferred order
+                for (const player of gameState.players) {
+                    const pid = gameState.players.indexOf(player);
+                    const abandonCb = document.getElementById(`abandon-player-${pid}`);
+                    const input = document.getElementById(`bid-player-${pid}`);
+                    // default not abandon
+                    let willAbandon = false;
+                    if (player.name === 'Alex') {
+                        // Alex abandons with high probability if allowed
+                        if (abandonCb && !abandonCb.disabled && Math.random() < 0.8) willAbandon = true;
+                    } else if (player.name === 'Spart' || player.name === 'Nao') {
+                        if (abandonCb && !abandonCb.disabled && Math.random() < 0.15) willAbandon = true;
+                    } else {
+                        willAbandon = false;
+                    }
+
+                    // enforce at least two players playing
+                    const remainingPlayers = gameState.numPlayers - plannedAbandons;
+                    if (willAbandon && (remainingPlayers - 1) <= 2) {
+                        willAbandon = false;
+                    }
+
+                    if (willAbandon && abandonCb && !abandonCb.disabled) {
+                        abandonCb.checked = true;
+                        if (input) { input.value = "0"; input.disabled = true; }
+                        plannedBids[player.name] = 'A';
+                        plannedAbandons++;
+                    } else {
+                        if (abandonCb) { abandonCb.checked = false; if (input) input.disabled = false; }
+                        const bidVal = decideBid(player.name, currentCards, player);
+                        if (input) input.value = String(Math.max(0, Math.min(currentCards, bidVal)));
+                        plannedBids[player.name] = Math.max(0, Math.min(currentCards, bidVal));
+                    }
+                }
+
+                // update totals & enforce limits UI
+                updateTotalBids();
+                enforceRoundPlayerLimits();
+
+                // Submit bids (call the button handler via click)
+                await sleep(80);
+                submitBidsBtn.click();
+
+                // Wait a bit to let tricks UI render
+                await sleep(80);
+
+                // Now fill tricks according to strategy while ensuring sum equals currentCards.
+                // We'll first compute desired tricks, then adjust last non-abandon player to match total.
+                const bidsForRound = gameState.roundHistory[gameState.currentRound].bids;
+                const trickInputs = [];
+                const desiredTricks = {};
+                let sumPlanned = 0;
+                let lastPlayablePlayer = null;
+
+                gameState.players.forEach((player, idx) => {
+                    const bid = bidsForRound[player.name];
+                    if (bid === 'A') {
+                        desiredTricks[player.name] = 0;
+                    } else {
+                        const planned = decideTricks(player.name, bid, currentCards);
+                        desiredTricks[player.name] = Math.max(0, Math.min(currentCards, planned));
+                        sumPlanned += desiredTricks[player.name];
+                        lastPlayablePlayer = player.name;
+                    }
+                });
+
+                // Adjust to ensure sum equals currentCards: if mismatch, correct on lastPlayablePlayer
+                if (lastPlayablePlayer !== null) {
+                    const diff = currentCards - sumPlanned;
+                    desiredTricks[lastPlayablePlayer] = Math.max(0, Math.min(currentCards, desiredTricks[lastPlayablePlayer] + diff));
+                }
+
+                // Apply to DOM trick inputs
+                gameState.players.forEach((player, idx) => {
+                    const bid = bidsForRound[player.name];
+                    if (bid === 'A') return;
+                    const inp = document.getElementById(`trick-player-${idx}`);
+                    if (inp) inp.value = String(desiredTricks[player.name]);
+                });
+
+                updateTotalTricksMade();
+                await sleep(60);
+
+                // Submit tricks
+                submitTricksBtn.click();
+
+                // Small pause between rounds
+                await sleep(150);
+            }
+
+            // After finishing, unset testMode and show result
+            gameState.testMode = false;
+            alert("Partie test terminée.");
+        }
+
+        // Start playing automatically
+        playRemainingRounds();
     });
 
-    autoFillScoresBtn.addEventListener('click', () => {
-        if(gameState.currentPhase === 'bidding') {
-             bidsInputsDiv.querySelectorAll('input[type="number"]:not(:disabled)').forEach(input => {
-                input.value = Math.floor(Math.random() * 2);
-             });
-            updateTotalBids();
-            setTimeout(() => submitBidsBtn.click(), 100);
-        } else if (gameState.currentPhase === 'tricks') {
-            const trickInputs = document.querySelectorAll('#tricks-inputs input[type="number"]');
-            let currentCards = gameState.roundCardSequence[gameState.currentRound];
-            let tricksAssigned = 0;
-            trickInputs.forEach((input, index) => {
-                if (index < trickInputs.length - 1) {
-                    const maxPossible = currentCards - tricksAssigned;
-                    const randomTricks = Math.floor(Math.random() * (maxPossible + 1));
-                    input.value = randomTricks;
-                    tricksAssigned += randomTricks;
-                } else {
-                    input.value = currentCards - tricksAssigned;
-                }
-            });
-            updateTotalTricksMade();
-            setTimeout(() => submitTricksBtn.click(), 100);
-        }
-    });
+    // --- Initialisation de la Partie ---
+    generatePlayerNameInputs();
+    showScreen('setup-screen');
+    checkExistingGame();
+    optionBonusCheckbox.disabled = true;
 });

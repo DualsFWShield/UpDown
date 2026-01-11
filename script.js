@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Aucune partie sauvegardée trouvée.");
         }
     }
-    
+
     function handleUndoRound() {
         if (gameState.currentRound === 0) return;
         if (!confirm("Voulez-vous vraiment annuler les résultats de la dernière manche ?")) return;
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastRoundData = gameState.roundHistory.pop();
         const reversalInfo = lastRoundData.reversalInfo;
         const isAscent = gameState.currentRound <= gameState.peakRound;
-        
+
         if (reversalInfo) {
             gameState.distributionDirection = (gameState.distributionDirection === 'clockwise') ? 'counter-clockwise' : 'clockwise';
         }
@@ -191,12 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (reversalInfo && reversalInfo.playerId === playerId) {
                 player.reversalsUsed--;
                 player.totalAbandons -= reversalInfo.cost;
-                if(isAscent) player.abandonsUsedAscent -= reversalInfo.cost;
+                if (isAscent) player.abandonsUsedAscent -= reversalInfo.cost;
                 else player.abandonsUsedDescent -= reversalInfo.cost;
             }
-             
+
             if (bid === 'A') {
-                if(!reversalInfo || reversalInfo.playerId !== playerId || reversalInfo.cost !== 3){
+                if (!reversalInfo || reversalInfo.playerId !== playerId || reversalInfo.cost !== 3) {
                     player.totalAbandons--;
                     if (isAscent) player.abandonsUsedAscent--;
                     else player.abandonsUsedDescent--;
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else player.contractsBroken--;
             }
         });
-        
+
         gameState.currentDealerIndex = (gameState.currentDealerIndex - 1 + gameState.numPlayers) % gameState.numPlayers;
         saveGameState();
         startGameUI();
@@ -229,13 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setupTricksPhase();
         } else {
             if (gameState.currentRound > 0 && !isResuming) {
-                 gameState.currentDealerIndex = (gameState.currentDealerIndex + 1) % gameState.numPlayers;
+                gameState.currentDealerIndex = (gameState.currentDealerIndex + 1) % gameState.numPlayers;
             }
             setupBiddingPhase();
         }
         updateLiveScoreboard();
     }
-    
+
     function setupBiddingPhase() {
         gameState.currentPhase = 'bidding';
         gameState.reversalInfoForRound = null;
@@ -247,13 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const firstBidderIndex = (gameState.currentDealerIndex + 1) % gameState.numPlayers;
         bidsInputsDiv.innerHTML = '';
-        
+
         const playerOrder = Array.from({ length: gameState.numPlayers }, (_, i) => {
-             if (gameState.distributionDirection === 'clockwise') {
+            if (gameState.distributionDirection === 'clockwise') {
                 return (firstBidderIndex + i) % gameState.numPlayers;
-             } else {
+            } else {
                 return (firstBidderIndex - i + gameState.numPlayers * i) % gameState.numPlayers;
-             }
+            }
         });
 
         playerOrder.forEach((playerIndex, orderIndex) => {
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="number" id="bid-player-${playerIndex}" min="0" max="${currentCards}" value="0" data-player-id="${playerIndex}">`;
 
             if (maxAbandons > 0 && abandonsLeft > 0) {
-                 controlsHTML += `
+                controlsHTML += `
                     <div style="margin-left: 15px; display: flex; align-items: center; gap: 5px;">
                         <input type="checkbox" class="abandon-cb" id="abandon-player-${playerIndex}" data-player-id="${playerIndex}">
                         <label for="abandon-player-${playerIndex}" style="font-weight: normal; margin-bottom: 0;">Abandonner (${abandonsLeft} restants)</label>
@@ -280,20 +280,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (maxAbandons > 0) {
-                 controlsHTML += `<div id="reverse-controls-${playerIndex}" style="margin-left: 10px; display: flex; flex-direction: column; align-items: flex-start;">`;
-                 if (abandonsLeft >= 2) {
-                     controlsHTML += `<div><input type="checkbox" class="reverse-cb" data-player-id="${playerIndex}" data-cost="2" id="reverse-cost2-${playerIndex}"><label for="reverse-cost2-${playerIndex}" style="font-weight: normal;"> Inverser (coût 2)</label></div>`;
-                 }
-                 if (abandonsLeft >= 3) {
-                     controlsHTML += `<div><input type="checkbox" class="reverse-cb" data-player-id="${playerIndex}" data-cost="3" id="reverse-cost3-${playerIndex}"><label for="reverse-cost3-${playerIndex}" style="font-weight: normal;"> Inverser + Abandonner (coût 3)</label></div>`;
-                 }
-                 controlsHTML += `</div>`;
+                controlsHTML += `<div id="reverse-controls-${playerIndex}" style="margin-left: 10px; display: flex; flex-direction: column; align-items: flex-start;">`;
+                if (abandonsLeft >= 2) {
+                    controlsHTML += `<div><input type="checkbox" class="reverse-cb" data-player-id="${playerIndex}" data-cost="2" id="reverse-cost2-${playerIndex}"><label for="reverse-cost2-${playerIndex}" style="font-weight: normal;"> Inverser (coût 2)</label></div>`;
+                }
+                if (abandonsLeft >= 3) {
+                    controlsHTML += `<div><input type="checkbox" class="reverse-cb" data-player-id="${playerIndex}" data-cost="3" id="reverse-cost3-${playerIndex}"><label for="reverse-cost3-${playerIndex}" style="font-weight: normal;"> Inverser + Abandonner (coût 3)</label></div>`;
+                }
+                controlsHTML += `</div>`;
             }
 
             div.innerHTML = controlsHTML;
             bidsInputsDiv.appendChild(div);
         });
-        
+
         bidsInputsDiv.querySelectorAll('input[type="number"]').forEach(i => i.addEventListener('input', updateTotalBids));
         bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => cb.addEventListener('change', handleAbandonChange));
         bidsInputsDiv.querySelectorAll('.reverse-cb').forEach(cb => cb.addEventListener('change', handleReverseChange));
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const reverseCheckbox = event.target;
         const playerId = parseInt(reverseCheckbox.dataset.playerId);
         const cost = parseInt(reverseCheckbox.dataset.cost);
-        
+
         // Uncheck other reverse options for the same player
         bidsInputsDiv.querySelectorAll(`.reverse-cb[data-player-id="${playerId}"]`).forEach(cb => {
             if (cb !== reverseCheckbox) cb.checked = false;
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cost === 3 && abandonCheckbox) {
                 abandonCheckbox.checked = true;
                 abandonCheckbox.disabled = true; // Lock it in
-                handleAbandonChange({target: abandonCheckbox});
+                handleAbandonChange({ target: abandonCheckbox });
             }
         } else { // If a reversal is unchecked
             gameState.reversalInfoForRound = null;
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cost === 3 && abandonCheckbox) {
                 abandonCheckbox.checked = false;
                 abandonCheckbox.disabled = false;
-                handleAbandonChange({target: abandonCheckbox});
+                handleAbandonChange({ target: abandonCheckbox });
             }
         }
         enforceRoundPlayerLimits();
@@ -354,14 +354,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const playerId = parseInt(abandonCheckbox.dataset.playerId);
         const input = document.getElementById(`bid-player-${playerId}`);
         const group = abandonCheckbox.closest('.input-group');
-        
+
         if (abandonCheckbox.checked) {
             input.disabled = true;
             input.value = "0";
             group.classList.add('abandoned');
         } else {
             // Prevent unchecking if it's part of a locked-in reversal combo
-            if(gameState.reversalInfoForRound?.playerId === playerId && gameState.reversalInfoForRound?.cost === 3){
+            if (gameState.reversalInfoForRound?.playerId === playerId && gameState.reversalInfoForRound?.cost === 3) {
                 abandonCheckbox.checked = true;
                 return;
             }
@@ -371,24 +371,24 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTotalBids();
         enforceRoundPlayerLimits();
     }
-    
+
     function enforceRoundPlayerLimits() {
         let abandonedCount = 0;
-        bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => { 
-            if(cb.checked) abandonedCount++;
+        bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => {
+            if (cb.checked) abandonedCount++;
         });
 
         // Rule: At least two players must play.
         if (gameState.numPlayers - abandonedCount <= 2) {
-             bidsInputsDiv.querySelectorAll('.abandon-cb:not(:checked)').forEach(cb => cb.disabled = true);
+            bidsInputsDiv.querySelectorAll('.abandon-cb:not(:checked)').forEach(cb => cb.disabled = true);
         } else {
-             bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => {
+            bidsInputsDiv.querySelectorAll('.abandon-cb').forEach(cb => {
                 // re-enable unless it's locked by a reversal
                 const playerId = parseInt(cb.dataset.playerId);
-                 if (!gameState.reversalInfoForRound || gameState.reversalInfoForRound.playerId !== playerId || gameState.reversalInfoForRound.cost !== 3) {
+                if (!gameState.reversalInfoForRound || gameState.reversalInfoForRound.playerId !== playerId || gameState.reversalInfoForRound.cost !== 3) {
                     cb.disabled = false;
-                 }
-             });
+                }
+            });
         }
     }
 
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentCards = gameState.roundCardSequence[gameState.currentRound];
         const currentBids = {};
         const abandonedPlayerIndexes = new Set();
-        
+
         bidsInputsDiv.querySelectorAll('.abandon-cb:checked').forEach(cb => abandonedPlayerIndexes.add(parseInt(cb.dataset.playerId)));
 
         if (gameState.numPlayers > 2 && gameState.players.length - abandonedPlayerIndexes.size < 2) {
@@ -429,38 +429,38 @@ document.addEventListener('DOMContentLoaded', () => {
             errorBids.textContent = `Les annonces doivent être entre 0 et ${currentCards}.`;
             return;
         }
-        
+
         const isAscent = gameState.currentRound <= gameState.peakRound;
 
-        if(gameState.reversalInfoForRound) {
+        if (gameState.reversalInfoForRound) {
             const { playerId, cost } = gameState.reversalInfoForRound;
             const player = gameState.players[playerId];
             player.reversalsUsed++;
             player.totalAbandons += cost;
-            if(isAscent) player.abandonsUsedAscent += cost;
+            if (isAscent) player.abandonsUsedAscent += cost;
             else player.abandonsUsedDescent += cost;
             gameState.distributionDirection = (gameState.distributionDirection === 'clockwise') ? 'counter-clockwise' : 'clockwise';
         }
 
         abandonedPlayerIndexes.forEach(playerId => {
             // Only count abandon cost if it wasn't part of a combo
-            if(!gameState.reversalInfoForRound || gameState.reversalInfoForRound.playerId !== playerId || gameState.reversalInfoForRound.cost !== 3){
+            if (!gameState.reversalInfoForRound || gameState.reversalInfoForRound.playerId !== playerId || gameState.reversalInfoForRound.cost !== 3) {
                 const player = gameState.players[playerId];
                 player.totalAbandons++;
-                if(isAscent) player.abandonsUsedAscent++;
+                if (isAscent) player.abandonsUsedAscent++;
                 else player.abandonsUsedDescent++;
             }
         });
 
         const roundData = {
-             roundNum: gameState.currentRound + 1, 
-             cards: currentCards, 
-             dealer: gameState.players[gameState.currentDealerIndex].name,
-             bids: currentBids,
-             reversalInfo: gameState.reversalInfoForRound
+            roundNum: gameState.currentRound + 1,
+            cards: currentCards,
+            dealer: gameState.players[gameState.currentDealerIndex].name,
+            bids: currentBids,
+            reversalInfo: gameState.reversalInfoForRound
         };
         gameState.roundHistory[gameState.currentRound] = roundData;
-        
+
         setupTricksPhase();
     });
 
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             tricksInputsDiv.appendChild(div);
         });
-        
+
         tricksInputsDiv.querySelectorAll('input[type="number"]').forEach(i => i.addEventListener('input', updateTotalTricksMade));
         cardsInRoundDisplayTricksSpan.textContent = currentCards.toString();
         updateTotalTricksMade();
@@ -593,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
+
         showScreen('end-game-screen');
         const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
         winnerNameSpan.textContent = `${sortedPlayers[0].name} (avec ${sortedPlayers[0].score} points)`;
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         generateCharts();
     }
-    
+
     function generateCharts() {
         if (scoreEvolutionChartInstance) scoreEvolutionChartInstance.destroy();
         if (contractsChartInstance) contractsChartInstance.destroy();
@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentScore += (round.scoresChange[player.name] || 0);
                 scoresOverTime.push(currentScore);
             });
-            if(player.bonusPoints > 0) scoresOverTime[scoresOverTime.length - 1] += player.bonusPoints;
+            if (player.bonusPoints > 0) scoresOverTime[scoresOverTime.length - 1] += player.bonusPoints;
 
             return {
                 label: player.name, data: scoresOverTime, borderColor: getRandomColor(), tension: 0.1, fill: false
@@ -633,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (scoreEvolutionChartCtx) {
-           scoreEvolutionChartInstance = new Chart(scoreEvolutionChartCtx, {
+            scoreEvolutionChartInstance = new Chart(scoreEvolutionChartCtx, {
                 type: 'line', data: { labels, datasets: datasetsScore },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Évolution des Scores' } } }
             });
@@ -642,8 +642,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const contractsData = {
             labels: gameState.players.map(p => p.name),
             datasets: [
-                { label: 'Contrats Réussis', data: gameState.players.map(p => p.contractsMade), backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                { label: 'Contrats Rompus', data: gameState.players.map(p => p.contractsBroken), backgroundColor: 'rgba(255, 99, 132, 0.6)' }
+                { label: 'Contrats Réussis', data: gameState.players.map(p => p.contractsMade), backgroundColor: '#10b981' },
+                { label: 'Contrats Rompus', data: gameState.players.map(p => p.contractsBroken), backgroundColor: '#ef4444' }
             ]
         };
         if (contractsChartCtx) {
@@ -655,10 +655,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getRandomColor() {
-        const r = Math.floor(Math.random() * 200);
-        const g = Math.floor(Math.random() * 200);
-        const b = Math.floor(Math.random() * 200);
-        return `rgb(${r},${g},${b})`;
+        const colors = [
+            '#6366f1', // Indigo 500
+            '#8b5cf6', // Violet 500
+            '#ec4899', // Pink 500
+            '#06b6d4', // Cyan 500
+            '#10b981', // Emerald 500
+            '#f59e0b', // Amber 500
+            '#3b82f6', // Blue 500
+            '#f43f5e'  // Rose 500
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
 
     exportPdfBtn.addEventListener('click', () => {
@@ -676,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1) Tableau des scores finaux
         const finalScoresHeader = [['Joueur', 'Score', 'Réussis', 'Rompus', 'Abandons', 'Inversions', 'Bonus']];
-        const finalScoresBody = [...gameState.players].sort((a,b) => b.score - a.score).map(p =>
+        const finalScoresBody = [...gameState.players].sort((a, b) => b.score - a.score).map(p =>
             [p.name, p.score, p.contractsMade, p.contractsBroken, p.totalAbandons, p.reversalsUsed, p.bonusPoints]
         );
         pdf.autoTable({
@@ -790,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Sauvegarde finale
-        const filename = `Escalier_Partie_${new Date().toISOString().slice(0,10)}.pdf`;
+        const filename = `Escalier_Partie_${new Date().toISOString().slice(0, 10)}.pdf`;
         pdf.save(filename);
     });
 
@@ -803,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('setup-screen');
     checkExistingGame();
     optionBonusCheckbox.disabled = true;
-    
+
     function applyTheme(theme) {
         if (theme === 'dark') {
             document.body.classList.add('dark-mode');
@@ -826,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const setupTitle = document.getElementById('setup-title'), mainTitle = document.getElementById('main-title');
     setupTitle.addEventListener('click', () => { setupTitleClicks++; if (setupTitleClicks >= 3 && mainTitleClicks >= 2) createTestGameBtn.style.display = 'inline-block'; });
     mainTitle.addEventListener('click', () => { mainTitleClicks++; if (setupTitleClicks >= 3 && mainTitleClicks >= 2) createTestGameBtn.style.display = 'inline-block'; });
-    
+
     // Replace the existing createTestGameBtn click handler with the following to add a configurable test mode
     createTestGameBtn.addEventListener('click', async () => {
         // Ask test parameters
@@ -842,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bonusAnswer = /^o/i.test(bonusAnswer.trim());
 
         // Configure UI options (assumes radio inputs exist with ids option-abandon-0/1/3/5 and #option-bonus)
-        const radioId = {0: 'option-abandon-none', 1: 'option-abandon-single', 3: 'option-abandon-triple', 5: 'option-abandon-quintuple'}[abandons];
+        const radioId = { 0: 'option-abandon-none', 1: 'option-abandon-single', 3: 'option-abandon-triple', 5: 'option-abandon-quintuple' }[abandons];
         const radioEl = document.getElementById(radioId);
         if (radioEl) radioEl.checked = true;
         optionBonusCheckbox.disabled = !(abandons === 5);
@@ -860,13 +867,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait a tick to ensure UI created
         await new Promise(r => setTimeout(r, 150));
 
-        // Enable fast auto-run of the entire test game (plays all rounds automatically following the described behaviors)
         gameState.testMode = true;
 
-        // Helper sleep to allow UI transitions
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-        // Decide strategy functions
         function decideBid(playerName, currentCards, playerObj) {
             // Noah: medium stable bid (perfect player will match tricks)
             if (playerName === 'Noah') {
@@ -912,7 +916,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return bid;
         }
 
-        // Play through all remaining rounds automatically
         async function playRemainingRounds() {
             while (gameState.currentRound < gameState.totalRounds) {
                 // Ensure bidding UI present
@@ -983,13 +986,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 await sleep(80);
 
                 // Now fill tricks according to strategy while ensuring sum equals currentCards.
-                // We'll first compute desired tricks, then adjust last non-abandon player to match total.
                 const bidsForRound = gameState.roundHistory[gameState.currentRound].bids;
-                const trickInputs = [];
                 const desiredTricks = {};
                 let sumPlanned = 0;
                 let lastPlayablePlayer = null;
 
+                // 1. Collect planned tricks for each player (except abandon)
                 gameState.players.forEach((player, idx) => {
                     const bid = bidsForRound[player.name];
                     if (bid === 'A') {
@@ -1002,13 +1004,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Adjust to ensure sum equals currentCards: if mismatch, correct on lastPlayablePlayer
-                if (lastPlayablePlayer !== null) {
-                    const diff = currentCards - sumPlanned;
-                    desiredTricks[lastPlayablePlayer] = Math.max(0, Math.min(currentCards, desiredTricks[lastPlayablePlayer] + diff));
+                // 2. Correction pour que la somme soit exactement currentCards
+                const nonAbandonPlayers = gameState.players.filter(p => bidsForRound[p.name] !== 'A');
+                let diff = currentCards - sumPlanned;
+                if (nonAbandonPlayers.length > 0 && diff !== 0) {
+                    // Répartir l'écart sur les joueurs non-abandon (en priorité le dernier)
+                    let idx = nonAbandonPlayers.length - 1;
+                    while (diff !== 0 && idx >= 0) {
+                        const p = nonAbandonPlayers[idx];
+                        const old = desiredTricks[p.name];
+                        let newVal = old + diff;
+                        if (newVal < 0) newVal = 0;
+                        if (newVal > currentCards) newVal = currentCards;
+                        diff -= (newVal - old);
+                        desiredTricks[p.name] = newVal;
+                        idx--;
+                    }
                 }
 
-                // Apply to DOM trick inputs
+                // 3. Appliquer dans le DOM
                 gameState.players.forEach((player, idx) => {
                     const bid = bidsForRound[player.name];
                     if (bid === 'A') return;
@@ -1026,7 +1040,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 await sleep(150);
             }
 
-            // After finishing, unset testMode and show result
             gameState.testMode = false;
             alert("Partie test terminée.");
         }

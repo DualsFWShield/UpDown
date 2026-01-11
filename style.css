@@ -1,354 +1,476 @@
+/* --- VARIABLES & THEME --- */
+:root {
+    /* Palette Principale: Indigo & Slate */
+    --bg-main: #f0f2f5;
+    --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f0f2f5 100%);
+    --bg-card: rgba(255, 255, 255, 0.7);
+    --bg-glass: rgba(255, 255, 255, 0.6);
+    --border-glass: rgba(255, 255, 255, 0.8);
+
+    --primary: #6366f1;
+    /* Indigo 500 */
+    --primary-hover: #4f46e5;
+    /* Indigo 600 */
+    --primary-light: #e0e7ff;
+    /* Indigo 100 */
+
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+    --success-hover: #059669;
+    --warning: #f59e0b;
+    --warning-hover: #d97706;
+
+    --text-main: #1e293b;
+    /* Slate 800 */
+    --text-muted: #64748b;
+    /* Slate 500 */
+    --text-light: #ffffff;
+
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    --font-stack: 'Outfit', 'Segoe UI', sans-serif;
+
+    --glass-blur: blur(12px);
+}
+
+body.dark-mode {
+    --bg-main: #0f172a;
+    /* Slate 900 */
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --bg-card: rgba(30, 41, 59, 0.65);
+    --bg-glass: rgba(30, 41, 59, 0.5);
+    --border-glass: rgba(255, 255, 255, 0.1);
+
+    --primary: #818cf8;
+    /* Indigo 400 */
+    --primary-hover: #6366f1;
+    --primary-light: rgba(99, 102, 241, 0.2);
+
+    --text-main: #f1f5f9;
+    /* Slate 100 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* --- RESET & BASE --- */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-stack);
     line-height: 1.6;
     margin: 0;
-    padding: 20px;
-    background-color: #f4f7f6;
-    color: #333;
+    min-height: 100vh;
+    color: var(--text-main);
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    /* Parfait pour le gradient */
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Pour que le contenu commence en haut si long */
-    min-height: 100vh;
+    padding: 20px;
+    transition: color 0.3s ease;
 }
 
+/* --- LAYOUT --- */
 .container {
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-glass);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
     width: 100%;
-    max-width: 800px; /* Ajustez selon vos besoins */
+    max-width: 900px;
     transition: all 0.3s ease;
+    animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-h1, h2, h3, h4 {
-    color: #007bff; /* Bleu moderne */
+/* --- TYPOGRAPHY --- */
+h1,
+h2,
+h3,
+h4 {
+    margin-top: 0;
     margin-bottom: 0.8em;
+    font-weight: 700;
+    color: var(--text-main);
 }
+
 h1 {
+    font-size: 2.8em;
     text-align: center;
-    margin-bottom: 1.5em;
-    font-size: 2.5em;
+    margin-bottom: 1.2em;
+    background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* Standard property */
+    -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
 }
+
+/* Fallback for icon color in h1 since it can't take text-fill-color */
 h1 i {
-    font-size: 1.2em;
-    color: #007bff;
+    background: none;
+    -webkit-text-fill-color: var(--primary);
+    color: var(--primary);
+    font-size: 0.9em;
 }
 
 h2 {
-    border-bottom: 2px solid #007bff30;
-    padding-bottom: 0.3em;
     font-size: 1.8em;
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.screen {
-    display: none; /* Caché par défaut */
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    margin-top: 20px;
-}
-.screen.active-screen {
-    display: block; /* Affiché si actif */
+h2 i {
+    color: var(--primary);
 }
 
-/* --- Formulaires et Inputs --- */
+h3 {
+    font-size: 1.4em;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+h3 i {
+    color: var(--primary);
+    font-size: 0.9em;
+}
+
+/* --- BUTTONS --- */
+button {
+    font-family: var(--font-stack);
+    font-weight: 600;
+    font-size: 0.95em;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 5px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(99, 102, 241, 0.35);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#cancel-game-btn,
+#new-game-btn {
+    background: linear-gradient(135deg, var(--danger) 0%, var(--danger-hover) 100%);
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.25);
+}
+
+#cancel-game-btn:hover,
+#new-game-btn:hover {
+    box-shadow: 0 8px 12px rgba(239, 68, 68, 0.35);
+}
+
+#load-game-btn,
+#submit-bids-btn,
+#submit-tricks-btn {
+    background: linear-gradient(135deg, var(--success) 0%, var(--success-hover) 100%);
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+}
+
+#load-game-btn:hover,
+#submit-bids-btn:hover,
+#submit-tricks-btn:hover {
+    box-shadow: 0 8px 12px rgba(16, 185, 129, 0.35);
+}
+
+#undo-round-btn {
+    background: linear-gradient(135deg, var(--warning) 0%, var(--warning-hover) 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.25);
+}
+
+#theme-toggle-btn {
+    background: var(--bg-glass);
+    color: var(--text-main);
+    border: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+}
+
+#theme-toggle-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary-hover);
+}
+
+/* --- FORMS & INPUTS --- */
 label {
+    font-weight: 500;
+    margin-bottom: 6px;
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    color: var(--text-muted);
 }
 
 input[type="text"],
 input[type="number"],
 select {
-    width: calc(100% - 22px); /* Prend en compte padding et bordure */
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-input[type="number"] {
-    width: 80px; /* Plus petit pour les nombres */
-}
-
-button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid transparent;
+    background-color: var(--bg-main);
+    /* Slight contrast from card */
+    border-radius: var(--radius-md);
+    font-family: var(--font-stack);
     font-size: 1em;
-    transition: background-color 0.3s ease;
-    margin-right: 10px;
-    margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    vertical-align: middle;
-}
-button:hover {
-    background-color: #0056b3;
-}
-button#cancel-game-btn, button#new-game-btn {
-    background-color: #dc3545; /* Rouge pour annuler/nouveau */
-}
-button#cancel-game-btn:hover, button#new-game-btn:hover {
-    background-color: #c82333;
-}
-button#load-game-btn {
-    background-color: #28a745; /* Vert pour reprendre */
-}
-button#load-game-btn:hover {
-    background-color: #218838;
-}
-button#undo-round-btn {
-    background-color: #ffc107; /* Orange pour corriger */
-}
-button#undo-round-btn:hover {
-    background-color: #e0a800;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--bg-card);
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
 
-#player-names-inputs div,
-#bids-inputs div,
-#tricks-inputs div {
+.input-group {
+    background: var(--bg-glass);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
-    gap: 10px; /* Espace entre label et input */
+    flex-wrap: wrap;
+    border: 1px solid var(--border-glass);
 }
-#player-names-inputs label,
-#bids-inputs label,
-#tricks-inputs label {
-    flex-basis: 150px; /* Largeur fixe pour les labels */
+
+.input-group label {
     margin-bottom: 0;
+    min-width: 140px;
+    color: var(--text-main);
 }
 
+.input-group input[type="number"] {
+    width: 80px;
+    margin-right: 15px;
+}
 
-/* --- Tableaux --- */
+/* Radio & Checkbox Customization would be nice, but keeping default for reliability unless requested */
+
+/* --- TABLES --- */
 table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-size: 0.9em;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    /* Espacement entre les lignes */
+    margin: 20px 0;
 }
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
+
 th {
-    background-color: #0056b3; /* Bleu plus foncé pour un meilleur contraste */
-    color: #ffffff; /* Texte blanc */
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--primary-light);
 }
+
 td {
-    background-color: #f9f9f9;
-}
-tbody tr:nth-child(even) td {
-    background-color: #efefef; /* Mode clair */
-}
-
-body.dark-mode tbody tr:nth-child(even) td {
-    background-color: #2a2a2a; /* Couleur adaptée au mode sombre */
-    color: #e0e0e0; /* Texte clair pour contraste */
+    background: var(--bg-glass);
+    padding: 16px;
+    border: none;
+    color: var(--text-main);
 }
 
-/* --- Graphiques --- */
-.charts-container {
-    display: flex;
-    flex-wrap: wrap; /* Permet aux graphiques de passer à la ligne si pas assez de place */
-    gap: 20px; /* Espace entre les graphiques */
-    margin-bottom: 20px;
-}
-.charts-container canvas {
-    max-width: 100%; /* S'assure que le canvas ne dépasse pas son conteneur */
-    flex: 1 1 400px; /* Flex grow, shrink, basis. Permet d'avoir 2 graphiques côte à côte si possible */
-    max-height: 400px; /* Limite la hauteur maximale des graphiques */
-    height: auto; /* Ajuste la hauteur automatiquement */
+tr td:first-child {
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
 }
 
-/* Utile pour les inputs de contrat/levées */
-.input-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-}
-.input-group label {
-    margin-right: 10px;
-    min-width: 120px; /* Ajustez pour aligner les inputs */
+tr td:last-child {
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
 }
 
-/* Indicateur pour celui qui a la parole */
+/* --- GAME INFO & HUD --- */
+#game-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    background: var(--primary-light);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 25px;
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+#game-info h2 {
+    grid-column: 1 / -1;
+    border-bottom: none;
+    margin-bottom: 0;
+    color: var(--primary-hover);
+}
+
+#game-info p {
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+#game-info span {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* --- STATES --- */
+.screen {
+    display: none;
+    animation: slideUp 0.5s ease-out;
+}
+
+.screen.active-screen {
+    display: block;
+}
+
 .parole-indicator {
-    color: #007bff;
-    font-size: 1.2em;
-    width: 20px; /* Pour l'alignement */
-    display: inline-block;
-    text-align: center;
-}
-body.dark-mode .parole-indicator {
-    color: #90caf9;
+    color: var(--warning);
+    font-size: 1.4em;
+    margin-right: 10px;
 }
 
-/* Style pour les joueurs ayant abandonné */
-.input-group.abandoned label,
 .input-group.abandoned {
-    color: #999;
-    font-style: italic;
+    opacity: 0.6;
 }
+
 .input-group.abandoned label {
     text-decoration: line-through;
 }
 
-
-/* Spinner (optionnel, pour indiquer chargement ou calcul) */
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border-left-color: #09f;
-    animation: spin 1s ease infinite;
-    margin: 20px auto;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.error-message {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+    padding: 10px;
+    border-radius: var(--radius-md);
+    margin-top: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* --- Responsiveness --- */
+.error-message::before {
+    content: '\f071';
+    /* FontAwesome warning icon */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+.error-message:empty {
+    display: none;
+}
+
+/* --- CHARTS --- */
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.chart-wrapper {
+    background: var(--bg-glass);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    height: 400px;
+    /* Explicit height for Chart.js */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.charts-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
     .container {
-        padding: 15px;
+        padding: 20px;
+        border-radius: 0;
+        min-height: 100vh;
     }
+
     h1 {
         font-size: 2em;
     }
-    button {
-        font-size: 0.9em;
-        padding: 10px 15px;
+
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
     }
-    table {
-        font-size: 0.8em;
+
+    .input-group input[type="number"] {
+        width: 100%;
+        margin: 5px 0;
     }
-    th, td {
-        padding: 8px;
+
+    .charts-container {
+        grid-template-columns: 1fr;
     }
-}
-
-/* --- Dark Mode --- */
-body.dark-mode {
-    background-color: #121212;
-    color: #e0e0e0;
-}
-
-body.dark-mode .container {
-    background-color: #1e1e1e;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-body.dark-mode h1, 
-body.dark-mode h2, 
-body.dark-mode h3,
-body.dark-mode h4 {
-    color: #90caf9;
-}
-
-body.dark-mode th {
-    background-color: #333;
-}
-
-body.dark-mode td {
-    background-color: #1e1e1e;
-}
-
-body.dark-mode button {
-    background-color: #333;
-    color: #e0e0e0;
-}
-
-body.dark-mode button:hover {
-    background-color: #555;
-}
-
-/* Champs d'entrée adaptés au mode sombre */
-body.dark-mode input[type="text"],
-body.dark-mode input[type="number"],
-body.dark-mode select {
-    background-color: #333; /* Fond sombre */
-    color: #e0e0e0; /* Texte clair */
-    border: 1px solid #555; /* Bordure plus sombre */
-}
-
-body.dark-mode input[type="text"]::placeholder,
-body.dark-mode input[type="number"]::placeholder {
-    color: #888; /* Placeholder plus clair */
-}
-
-/* Styles pour les exemples */
-.example {
-    background-color: #f9f9f9;
-    border-left: 5px solid #007bff;
-    padding: 10px 15px;
-    margin: 15px 0;
-    border-radius: 4px;
-    font-style: italic;
-}
-
-body.dark-mode .example {
-    background-color: #2a2a2a;
-    border-left-color: #90caf9;
-}
-
-/* Styles pour le tableau récapitulatif */
-.summary-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 0.9em;
-    text-align: center;
-}
-
-.summary-table th {
-    background-color: #007bff;
-    color: #ffffff;
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
-.summary-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-}
-
-.summary-table tbody tr:nth-child(even) td {
-    background-color: #efefef;
-}
-
-body.dark-mode .summary-table th {
-    background-color: #333;
-}
-
-body.dark-mode .summary-table td {
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-}
-
-body.dark-mode .summary-table tbody tr:nth-child(even) td {
-    background-color: #2a2a2a;
-}
-
-/* Bouton de retour */
-button {
-    margin-top: 20px;
 }
